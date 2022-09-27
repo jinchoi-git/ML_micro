@@ -63,7 +63,7 @@ def post_processing(idx):
 #     post_processing()
 
 if __name__ == "__main__":
-    for i in range(600, 800):
+    for i in range(1000, 1250):
         # pre_processing(i)
         run(i)
         post_processing(i)

@@ -1,7 +1,5 @@
 ML/data
-ML/saved_npy
-ML/saved_img
-ML/*.png
+ML/runs
 PF_sim/post-processing
 PF_sim/reference
 PF_sim/src/__pycache__
