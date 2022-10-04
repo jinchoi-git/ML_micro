@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torchvision.transforms as T
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from dataset import PolyDataset
@@ -13,14 +14,14 @@ from utils import (
     save_loss_acc_plot,
     )
 
-os.environ["CUDA_VISIBLE_DEVICES"]="3"
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # DEVICE = "cpu"
-BATCH_SIZE = 10
-NUM_EPOCHS = 2
+BATCH_SIZE = 300
+NUM_EPOCHS = 30
 IMAGE_HEIGHT = 93
 IMAGE_WIDTH = 93  
 PIN_MEMORY = True
@@ -48,13 +49,19 @@ def train_fn(loader, model, optimizer, loss_fn):
         loss.backward()
         optimizer.step()
         loop.set_postfix(loss=loss.item())
-    return loss.item()
+        fl_loss = float(loss.item())
+    return fl_loss
 
 # main function
 def main():
+    transforms = torch.nn.Sequential(
+        T.RandomHorizontalFlip(p=0.5),
+        T.RandomVerticalFlip(p=0.5)
+)
+    
     # get dataset, loaders
-    train_ds = PolyDataset(image_dir=TRAIN_IMG_DIR, mask_dir=TRAIN_MASK_DIR)
-    val_ds = PolyDataset(image_dir=VAL_IMG_DIR, mask_dir=VAL_MASK_DIR)
+    train_ds = PolyDataset(image_dir=TRAIN_IMG_DIR, mask_dir=TRAIN_MASK_DIR, transform=transforms)
+    val_ds = PolyDataset(image_dir=VAL_IMG_DIR, mask_dir=VAL_MASK_DIR, transform=transforms)
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=2, pin_memory=True)
 

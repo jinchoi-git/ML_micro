@@ -43,9 +43,8 @@ class PolyDataset(Dataset):
         # print(f"image shape {image.shape}")
         # print(f"mask shape {mask.shape}")
        
-        if self.transform is not None:
-            augmentations = self.transform(image=image, mask=mask)
-            image = augmentations["image"]
-            mask = augmentations["mask"] 
+        if self.transform:
+            t_image = self.transform(t_image)
+            t_mask = self.transform(t_mask)
 
         return t_image, t_mask

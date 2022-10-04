@@ -27,6 +27,7 @@ def check_accuracy(loader, model, loss_fn, device="cuda"):
             y = y.long().to(device=device)
             output = model(x)
             loss = loss_fn(output, y)
+            fl_loss = float(loss.item())
             
             output = output.long()
             pred = torch.argmax(output, dim=1)
@@ -35,7 +36,7 @@ def check_accuracy(loader, model, loss_fn, device="cuda"):
             accc = acc.to("cpu").detach().numpy()
     print(f"ACCURACY = {accc}")
     model.train()
-    return accc, loss.item()
+    return accc, fl_loss
 
 def save_predictions_as_npys(loader, model, BATCH_SIZE, folder="saved_npy/", device="cpu"):
     model.eval()
