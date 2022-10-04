@@ -4,7 +4,8 @@ PF_sim/post-processing
 PF_sim/reference
 PF_sim/src/__pycache__
 *.DS_Store
-
+*.npy
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
