@@ -48,8 +48,8 @@ def modify_PF():
 
 def np_perm():
     
-    imagedir = "/home/jyc3887/ML_micro/ML/data/train_images"
-    maskdir = "/home/jyc3887/ML_micro/ML/data/train_masks"
+    imagedir = "/home/jyc3887/ML_micro/ML/experimental/data/train_images"
+    maskdir = "/home/jyc3887/ML_micro/ML/experimental/data/train_masks"
     
     images = []
     masks = []
@@ -66,7 +66,7 @@ def np_perm():
         imagepath = os.path.join(imagedir, imagefilename)
         image = np.load(imagepath)
         
-        for i in range(19):
+        for i in range(2):
             image0 = image == 0
             image1 = image == 1
             image2 = image == 2
@@ -114,7 +114,7 @@ def np_perm():
         maskpath = os.path.join(maskdir, maskfilename)
         mask = np.load(maskpath)
         
-        for i in range(19):
+        for i in range(2):
             mask0 = mask == 0
             mask1 = mask == 1
             mask2 = mask == 2
