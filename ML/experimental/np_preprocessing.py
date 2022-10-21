@@ -12,8 +12,75 @@ import os, sys
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
+def sample_RVE():
+    for i in range(1):
+        case = f"fd_example_08"
+        numpysolpath = f"/home/jin/Documents/jax-am/jax-am/modules/phase_field/data/numpy/{case}/pf/sols"
+        trainfilepath ="/home/jin/Desktop/experimental/data"
+        
+        inds = []
+        Ts = []
+        for file in os.listdir(numpysolpath):
+            if file.startswith("cell_ori"):
+                inds.append(file)
+            if file.startswith("T_"):
+                Ts.append(file)
+        inds = sorted(inds)
+        Ts = sorted(Ts)
+        
+        for j in range(len(inds)-1):
+            inds_0 = np.load(os.path.join(numpysolpath, inds[j]))
+            inds_1 = np.load(os.path.join(numpysolpath, inds[j+1]))
+            T_0 = np.load(os.path.join(numpysolpath, Ts[j]))
+            T_1 = np.load(os.path.join(numpysolpath, Ts[j+1]))
+            
+            inds_0 = inds_0.reshape((46,93,464))
+            inds_1 = inds_1.reshape((46,93,464))
+            T_0 = T_0.reshape((46,93,464))
+            T_1 = T_1.reshape((46,93,464))
+            
+            # may need
+            x_start = 0
+            y_start = 0
+            z_start = 0
+            x_size = 46
+            y_size = 46
+            z_size = 46
+            x_stride = 46
+            y_stride = 46
+            z_stride = 46
+            x_end = x_start + x_stride
+            y_end = y_start + y_stride
+            z_end = z_start + z_stride
+            
+            # make more robust later
+            for x in range(1):
+                for y in range(2):
+                    for z in range(10):
+                        inds_cube_0 = inds_0[(x_stride*x):(x_stride*x+x_size), (y_stride*y):(y_stride*y+y_size), (z_stride*z):(z_stride*z+z_size)]
+                        inds_cube_1 = inds_1[(x_stride*x):(x_stride*x+x_size), (y_stride*y):(y_stride*y+y_size), (z_stride*z):(z_stride*z+z_size)]
+                        T_cube_0 = T_0[(x_stride*x):(x_stride*x+x_size), (y_stride*y):(y_stride*y+y_size), (z_stride*z):(z_stride*z+z_size)]
+                        T_cube_1 = T_1[(x_stride*x):(x_stride*x+x_size), (y_stride*y):(y_stride*y+y_size), (z_stride*z):(z_stride*z+z_size)]
+                        
+                        # set liquid indices to 20
+                        inds_cube_0[T_cube_0>1700] = 20.0
+                        inds_cube_1[T_cube_1>1700] = 20.0
+                        
+                        inds_cube_0 = np.expand_dims(inds_cube_0, axis=0)
+                        T_cube_0 = np.expand_dims(T_cube_0, axis=0)
+                        T_cube_1 = np.expand_dims(T_cube_1, axis=0)
+                        image = np.concatenate((inds_cube_0, T_cube_0, T_cube_1), axis=0)
+                        mask = inds_cube_1
+                        
+                        if (image > 1700.0).any():
+                            np.save(os.path.join(trainfilepath, f"image_{i}_{x}_{y}_{z}.npy"), image)
+                            np.save(os.path.join(trainfilepath, f"mask_{i}_{x}_{y}_{z}.npy"), mask)
+                            print("temp somewhere > 1700, saved")
+                        else:
+                            print("this cube doesn't melt, not saved")
+
 def modify_PF():
-    for i in range(2000):
+    for i in range(3000):
         case = f"unet_input_{i}"
     
         jaxfilepath= f"/home/jyc3887/ML_micro/PF_sim/post-processing/numpy/{case}/pf/sols"
@@ -159,5 +226,6 @@ def np_perm():
             print(f"mask {i} saved")
 
 if __name__ == "__main__":
+    sample_RVE()
     # modify_PF()
-    np_perm()
+    # np_perm()

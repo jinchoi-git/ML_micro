@@ -20,15 +20,13 @@ os.environ["CUDA_VISIBLE_DEVICES"]="3"
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # DEVICE = "cpu"
-BATCH_SIZE = 20 
-NUM_EPOCHS = 20
-IMAGE_HEIGHT = 93
-IMAGE_WIDTH = 93  
+BATCH_SIZE = 1 
+NUM_EPOCHS = 1
 PIN_MEMORY = True
 LOAD_MODEL = False
 
 # directories
-MAIN_DIR = "/home/jyc3887/ML_micro/ML/experimental"
+MAIN_DIR = "/home/jin/Desktop/experimental"
 TRAIN_IMG_DIR = os.path.join(MAIN_DIR, "data/train_images")
 TRAIN_MASK_DIR = os.path.join(MAIN_DIR, "data/train_masks")
 VAL_IMG_DIR = os.path.join(MAIN_DIR, "data/val_images")
@@ -72,7 +70,7 @@ def main():
     model = UNET(in_channels=12, out_channels=20).to(DEVICE)
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    
+       
     print("starting training loop")
     losstrains = []
     lossvals = []
@@ -84,11 +82,13 @@ def main():
         accs.append(acc)
         lossvals.append(lossval)
         print(f"looping epoch {epoch}/{NUM_EPOCHS}")
-        
+    
+    # save everything
     save_predictions_as_npys(val_loader, model, BATCH_SIZE, folder=NPY_DIR, device=DEVICE)
     save_loss_acc_plot(losstrains, lossvals, accs, work_dir=work_dir)
     # save_npys_as_imgs(work_dir=work_dir)
     npy_to_vtu(work_dir=work_dir)
+    torch.save(model.state_dict(), os.path.join(work_dir, "model_state_dict"))
 
 if __name__ == "__main__":
     main()

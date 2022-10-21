@@ -126,7 +126,7 @@ def npy_to_vtu(work_dir="/work_dir"):
         y = y.flatten()
         pred = pred.flatten()
    
-        filename = "/home/jyc3887/ML_micro/ML/experimental/example.vtu"
+        filename = "/home/jin/Desktop/experimental/example.vtu"
         mask_data = meshio.read(filename)
         mask_dict = mask_data.cell_data
         mask_dict['ori_inds'][0] = y

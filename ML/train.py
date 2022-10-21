@@ -14,7 +14,7 @@ from utils import (
     save_loss_acc_plot,
     )
 
-os.environ["CUDA_VISIBLE_DEVICES"]="2"
+os.environ["CUDA_VISIBLE_DEVICES"]="3"
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4

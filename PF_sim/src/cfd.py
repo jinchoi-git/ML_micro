@@ -14,7 +14,7 @@ def get_T(t, polycrystal):
     '''
     centroids = polycrystal.centroids
 
-    Q = 25
+    Q = 30
     alpha = 5.2
     kappa = 2.7*1e-2
     x0 = args['laser_path']['x_pos'][0]
@@ -24,6 +24,7 @@ def get_T(t, polycrystal):
     Y = centroids[:, 1] - 0.5*args['domain_y']
     Z = centroids[:, 2] - args['domain_z']
     R = np.sqrt(X**2 + Y**2 + Z**2)
+    # R = 0.0003
     T = args['T_ambient'] + Q / (2 * np.pi * kappa) / R * np.exp(-vel / (2*alpha) * (R + X))
 
     # TODO: Not quite elegant here

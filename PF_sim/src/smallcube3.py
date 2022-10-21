@@ -8,7 +8,7 @@ from src.utils import Field
 from src.yaml_parse import args
 from matplotlib import pyplot as plt
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="3"
 
 def set_params(idx):
     '''
@@ -63,7 +63,7 @@ def post_processing(idx):
 #     post_processing()
 
 if __name__ == "__main__":
-    for i in range(2500, 2667):
+    for i in range(2834, 3000):
         # pre_processing(i)
         run(i)
         post_processing(i)

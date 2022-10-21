@@ -15,7 +15,7 @@ def set_params(idx):
     If a certain parameter is not set, a default value will be used according to the YAML file.
     '''
     args['id'] = idx
-    args['case'] = f'unet_input_{idx}'
+    args['case'] = f'unet_test_{idx}'
     args['num_grains'] = 4000
     args['domain_x'] = 0.2
     args['domain_y'] = 0.2
@@ -23,7 +23,8 @@ def set_params(idx):
     args['r_beam'] = 0.03
     args['power'] = 100
     args['write_sol_interval'] = 400
-    
+    args['laser_path']['time'] = [0.0, 0.0008]
+    args['laser_path']['x_pos'] = [0.0, 0.2]
     # args['ad_hoc'] = 0.1
 
 
@@ -63,7 +64,7 @@ def post_processing(idx):
 #     post_processing()
 
 if __name__ == "__main__":
-    for i in range(2500, 2667):
+    for i in range(1):
         # pre_processing(i)
         run(i)
         post_processing(i)
