@@ -123,18 +123,18 @@ def npy_to_vtu(work_dir="/work_dir"):
     for i in range(len(ys)):
         y = np.load(os.path.join(npfilepath, ys[i]))
         pred = np.load(os.path.join(npfilepath, preds[i]))
-        y = y.flatten()
-        pred = pred.flatten()
+        # y = y.flatten()
+        # pred = pred.flatten()
    
-        filename = "/home/jin/Desktop/experimental/example.vtu"
+        filename = "/home/jin/Documents/ML_micro/ML_micro/ML/experimental/base_mesh.vtu"
         mask_data = meshio.read(filename)
+        mask_data.cell_data['ori_ind'] = [y.flatten()]
+        
         mask_dict = mask_data.cell_data
         mask_dict['ori_inds'][0] = y
-        mask_data.cell_data = mask_dict
         meshio.write(os.path.join(vtufilepath, f"mask_{i}.vtu"), mask_data)
         
         pred_data = meshio.read(filename)
-        pred_dict = pred_data.cell_data
-        pred_dict['ori_inds'][0] = pred
-        pred_data.cell_data = pred_dict
+        pred_data.cell_data['ori_ind'] = [pred.flatten()]
         meshio.write(os.path.join(vtufilepath, f"pred_{i}.vtu"), pred_data)
+

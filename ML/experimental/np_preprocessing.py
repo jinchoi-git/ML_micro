@@ -13,10 +13,10 @@ import os, sys
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 def sample_RVE():
-    for i in range(1):
-        case = f"fd_example_08"
+    for i in range(5):
+        case = f"new_sample_{i}"
         numpysolpath = f"/home/jin/Documents/jax-am/jax-am/modules/phase_field/data/numpy/{case}/pf/sols"
-        trainfilepath ="/home/jin/Desktop/experimental/data"
+        trainfilepath ="/home/jin/Documents/ML_micro/ML_micro/ML/experimental/data"
         
         inds = []
         Ts = []
@@ -73,8 +73,8 @@ def sample_RVE():
                         mask = inds_cube_1
                         
                         if (image > 1700.0).any():
-                            np.save(os.path.join(trainfilepath, f"image_{i}_{x}_{y}_{z}.npy"), image)
-                            np.save(os.path.join(trainfilepath, f"mask_{i}_{x}_{y}_{z}.npy"), mask)
+                            np.save(os.path.join(trainfilepath, f"image_{i}_{j}_{x}_{y}_{z}.npy"), image)
+                            np.save(os.path.join(trainfilepath, f"mask_{i}_{j}_{x}_{y}_{z}.npy"), mask)
                             print("temp somewhere > 1700, saved")
                         else:
                             print("this cube doesn't melt, not saved")

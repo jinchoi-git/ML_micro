@@ -14,19 +14,19 @@ from utils import (
     npy_to_vtu,
     )
 
-os.environ["CUDA_VISIBLE_DEVICES"]="3"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # DEVICE = "cpu"
-BATCH_SIZE = 1 
+BATCH_SIZE = 10 
 NUM_EPOCHS = 1
 PIN_MEMORY = True
 LOAD_MODEL = False
 
 # directories
-MAIN_DIR = "/home/jin/Desktop/experimental"
+MAIN_DIR = "/home/jin/Documents/ML_micro/ML_micro/ML/experimental/"
 TRAIN_IMG_DIR = os.path.join(MAIN_DIR, "data/train_images")
 TRAIN_MASK_DIR = os.path.join(MAIN_DIR, "data/train_masks")
 VAL_IMG_DIR = os.path.join(MAIN_DIR, "data/val_images")
@@ -67,7 +67,7 @@ def main():
     os.makedirs(IMG_DIR, exist_ok=True)
     os.makedirs(VTU_DIR, exist_ok=True)
     
-    model = UNET(in_channels=12, out_channels=20).to(DEVICE)
+    model = UNET(in_channels=3, out_channels=21).to(DEVICE)
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
        
