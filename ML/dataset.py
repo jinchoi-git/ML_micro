@@ -30,9 +30,13 @@ class PolyDataset(Dataset):
         image = np.load(img_path)
         mask = np.load(mask_path)
 
-        image[0,:,:] = image[0,:,:]/19
-        image[1:,:,:] = image[1:,:,:]-309
-        image[1:,:,:] = image[1:,:,:]/1691
+        #image[0,:,:] = image[0,:,:]/19
+        #image[1:,:,:] = image[1:,:,:]-300
+        #image[1:,:,:] = image[1:,:,:]/1691
+        
+        image[0,:,:,:] = image[0,:,:,:]/20
+        image[1:,:,:,:] = image[1,:,:,:]-299.9
+        image[1:,:,:,:] = image[1:,:,:,:]/1700
         
         # image = np.swapaxes(image,0,1)
         # image = np.swapaxes(image,1,2)
@@ -43,8 +47,9 @@ class PolyDataset(Dataset):
         # print(f"image shape {image.shape}")
         # print(f"mask shape {mask.shape}")
        
-        if self.transform:
-            t_image = self.transform(t_image)
-            t_mask = self.transform(t_mask)
+        if self.transform is not None:
+            augmentations = self.transform(image=image, mask=mask)
+            image = augmentations["image"]
+            mask = augmentations["mask"] 
 
         return t_image, t_mask

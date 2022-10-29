@@ -2,7 +2,6 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision.transforms as T
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from dataset import PolyDataset
@@ -12,23 +11,22 @@ from utils import (
     save_predictions_as_npys,
     save_npys_as_imgs,
     save_loss_acc_plot,
+    npy_to_vtu,
     )
 
-os.environ["CUDA_VISIBLE_DEVICES"]="3"
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # DEVICE = "cpu"
-BATCH_SIZE = 300
+BATCH_SIZE = 20 
 NUM_EPOCHS = 30
-IMAGE_HEIGHT = 93
-IMAGE_WIDTH = 93  
 PIN_MEMORY = True
 LOAD_MODEL = False
 
 # directories
-MAIN_DIR = "/home/jyc3887/ML_micro/ML"
+MAIN_DIR = "/home/jyc3887/ML_micro/ML/experimental"
 TRAIN_IMG_DIR = os.path.join(MAIN_DIR, "data/train_images")
 TRAIN_MASK_DIR = os.path.join(MAIN_DIR, "data/train_masks")
 VAL_IMG_DIR = os.path.join(MAIN_DIR, "data/val_images")
@@ -54,14 +52,10 @@ def train_fn(loader, model, optimizer, loss_fn):
 
 # main function
 def main():
-    transforms = torch.nn.Sequential(
-        T.RandomHorizontalFlip(p=0.5),
-        T.RandomVerticalFlip(p=0.5)
-)
-    
     # get dataset, loaders
-    train_ds = PolyDataset(image_dir=TRAIN_IMG_DIR, mask_dir=TRAIN_MASK_DIR, transform=transforms)
-    val_ds = PolyDataset(image_dir=VAL_IMG_DIR, mask_dir=VAL_MASK_DIR, transform=transforms)
+    train_ds = PolyDataset(image_dir=TRAIN_IMG_DIR, mask_dir=TRAIN_MASK_DIR)
+    print(f"dataset length is {len(train_ds)}")
+    val_ds = PolyDataset(image_dir=VAL_IMG_DIR, mask_dir=VAL_MASK_DIR)
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=2, pin_memory=True)
 
@@ -69,13 +63,15 @@ def main():
     work_dir = os.path.join(MAIN_DIR, "runs", f"LR{LEARNING_RATE}_BS{BATCH_SIZE}_NE{NUM_EPOCHS}_TS{len(train_ds)}_VS{len(val_ds)}")
     NPY_DIR = os.path.join(work_dir, "saved_npy")
     IMG_DIR = os.path.join(work_dir, "saved_img")
+    VTU_DIR = os.path.join(work_dir, "saved_vtu")
     os.makedirs(NPY_DIR, exist_ok=True)
     os.makedirs(IMG_DIR, exist_ok=True)
+    os.makedirs(VTU_DIR, exist_ok=True)
     
-    model = UNET(in_channels=12, out_channels=20).to(DEVICE)
+    model = UNET(in_channels=3, out_channels=21).to(DEVICE)
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    
+       
     print("starting training loop")
     losstrains = []
     lossvals = []
@@ -87,10 +83,13 @@ def main():
         accs.append(acc)
         lossvals.append(lossval)
         print(f"looping epoch {epoch}/{NUM_EPOCHS}")
-        
+    
+    # save everything
     save_predictions_as_npys(val_loader, model, BATCH_SIZE, folder=NPY_DIR, device=DEVICE)
     save_loss_acc_plot(losstrains, lossvals, accs, work_dir=work_dir)
-    save_npys_as_imgs(work_dir=work_dir)
+    # save_npys_as_imgs(work_dir=work_dir)
+    npy_to_vtu(work_dir=work_dir)
+    torch.save(model.state_dict(), os.path.join(work_dir, "model_state_dict"))
 
 if __name__ == "__main__":
     main()

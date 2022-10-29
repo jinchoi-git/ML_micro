@@ -9,16 +9,17 @@ Created on Tue Sep 27 16:15:42 2022
 import torch
 import torch.nn as nn
 import torchvision.transforms.functional as TF
+import torch.nn.functional as TNF
 
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(out_channels),
+            nn.Conv3d(in_channels, out_channels, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(out_channels),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(out_channels),
+            nn.Conv3d(out_channels, out_channels, 3, 1, 1, bias=False),
+            nn.BatchNorm3d(out_channels),
             nn.ReLU(inplace=True),
         )
 
@@ -32,7 +33,7 @@ class UNET(nn.Module):
         super(UNET, self).__init__()
         self.ups = nn.ModuleList()
         self.downs = nn.ModuleList()
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
 
         # Down part of UNET
         self.downs.append(DoubleConv(in_channels, 64))
@@ -41,20 +42,20 @@ class UNET(nn.Module):
         self.downs.append(DoubleConv(256, 512))
         
         # Up part of UNET
-        self.ups.append(nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2))
+        self.ups.append(nn.ConvTranspose3d(1024, 512, kernel_size=2, stride=2))
         self.ups.append(DoubleConv(1024, 512))
-        self.ups.append(nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2))
+        self.ups.append(nn.ConvTranspose3d(512, 256, kernel_size=2, stride=2))
         self.ups.append(DoubleConv(512, 256))
-        self.ups.append(nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2))
+        self.ups.append(nn.ConvTranspose3d(256, 128, kernel_size=2, stride=2))
         self.ups.append(DoubleConv(256, 128))
-        self.ups.append(nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2))
+        self.ups.append(nn.ConvTranspose3d(128, 64, kernel_size=2, stride=2))
         self.ups.append(DoubleConv(128, 64))
 
         # middle part
         self.bottleneck = DoubleConv(512, 1024)
         
         # final part
-        self.final_conv = nn.Conv2d(64, out_channels, kernel_size=1)
+        self.final_conv = nn.Conv3d(64, out_channels, kernel_size=1)
 
     def forward(self, x):
         attach_array = []
@@ -72,9 +73,10 @@ class UNET(nn.Module):
             attach = attach_array[idx//2] #get skip connections by 1 index
 
             if x.shape != attach.shape:
-                x = TF.resize(x, size=attach.shape[2:])
+                # x = TF.resize(x, size=attach.shape[2:])
+                x = TNF.interpolate(x, size=attach.shape[2:])
 
             concat_skip = torch.cat((attach, x), dim=1) #attach the skip connect
             x = self.ups[idx+1](concat_skip) #do double conv
 
-        return self.final_conv(x)
+        return self.final_conv(x)       

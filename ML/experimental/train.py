@@ -14,19 +14,19 @@ from utils import (
     npy_to_vtu,
     )
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # DEVICE = "cpu"
-BATCH_SIZE = 10 
-NUM_EPOCHS = 1
+BATCH_SIZE = 20 
+NUM_EPOCHS = 30
 PIN_MEMORY = True
 LOAD_MODEL = False
 
 # directories
-MAIN_DIR = "/home/jin/Documents/ML_micro/ML_micro/ML/experimental/"
+MAIN_DIR = "/home/jyc3887/ML_micro/ML/experimental"
 TRAIN_IMG_DIR = os.path.join(MAIN_DIR, "data/train_images")
 TRAIN_MASK_DIR = os.path.join(MAIN_DIR, "data/train_masks")
 VAL_IMG_DIR = os.path.join(MAIN_DIR, "data/val_images")
@@ -54,6 +54,7 @@ def train_fn(loader, model, optimizer, loss_fn):
 def main():
     # get dataset, loaders
     train_ds = PolyDataset(image_dir=TRAIN_IMG_DIR, mask_dir=TRAIN_MASK_DIR)
+    print(f"dataset length is {len(train_ds)}")
     val_ds = PolyDataset(image_dir=VAL_IMG_DIR, mask_dir=VAL_MASK_DIR)
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=2, pin_memory=True)

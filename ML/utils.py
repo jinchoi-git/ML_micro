@@ -9,7 +9,10 @@ Created on Tue Sep 27 16:19:30 2022
 import os
 import numpy as np
 import torch
+import meshio
 import matplotlib.pyplot as plt
+
+# data = meshio.read("/home/jin/Documents/ML_micro/ML/runs/LR0.0001_BS2_NE1_TS4_VS2/saved_vtu/pred_0.vtu")
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
@@ -102,3 +105,33 @@ def save_loss_acc_plot(losstrains, lossvals, accs, work_dir="/work_dir"):
     np.save(os.path.join(work_dir, "training_loss.npy"), losstrains)
     np.save(os.path.join(work_dir, "validation_loss.npy"), lossvals)
     np.save(os.path.join(work_dir, "accuracy.npy"), accs)
+
+def npy_to_vtu(work_dir="/work_dir"):
+    npfilepath = os.path.join(work_dir, "saved_npy")
+    vtufilepath = os.path.join(work_dir, "saved_vtu")
+    
+    ys = []
+    preds = []
+    for file in os.listdir(npfilepath):
+        if file.startswith("y"):
+            ys.append(file)
+        if file.startswith("preds"):
+            preds.append(file)
+    ys = sorted(ys)
+    preds = sorted(preds)
+
+    for i in range(len(ys)):
+        y = np.load(os.path.join(npfilepath, ys[i]))
+        pred = np.load(os.path.join(npfilepath, preds[i]))
+        # y = y.flatten()
+        # pred = pred.flatten()
+   
+        filename = "/home/jyc3887/ML_micro/ML/experimental/base_mesh.vtu"
+        mask_data = meshio.read(filename)
+        mask_data.cell_data['ori_ind'] = [y.flatten()]
+        meshio.write(os.path.join(vtufilepath, f"mask_{i}.vtu"), mask_data)
+        
+        pred_data = meshio.read(filename)
+        pred_data.cell_data['ori_ind'] = [pred.flatten()]
+        meshio.write(os.path.join(vtufilepath, f"pred_{i}.vtu"), pred_data)
+
