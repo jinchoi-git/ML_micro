@@ -12,8 +12,6 @@ import torch
 import meshio
 import matplotlib.pyplot as plt
 
-# data = meshio.read("/home/jin/Documents/ML_micro/ML/runs/LR0.0001_BS2_NE1_TS4_VS2/saved_vtu/pred_0.vtu")
-
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
     torch.save(state, filename)
@@ -25,7 +23,7 @@ def load_checkpoint(checkpoint, model):
 def check_accuracy(loader, model, loss_fn, device="cuda"):
     model.eval()
     with torch.no_grad():
-        for x, y in loader:
+        for x, y, i_name, m_name in loader:
             x = x.to(device)
             y = y.long().to(device=device)
             output = model(x)
@@ -43,7 +41,7 @@ def check_accuracy(loader, model, loss_fn, device="cuda"):
 
 def save_predictions_as_npys(loader, model, BATCH_SIZE, folder="saved_npy/", device="cpu"):
     model.eval()
-    for idx, (x, y) in enumerate(loader):
+    for idx, (x, y, i_name, m_name) in enumerate(loader):
         x = x.to(device=device, dtype=torch.float)
         with torch.no_grad():
             output = model(x)
@@ -52,8 +50,8 @@ def save_predictions_as_npys(loader, model, BATCH_SIZE, folder="saved_npy/", dev
             yy = y.to("cpu").detach().numpy()
           
         for i in range(BATCH_SIZE):
-            np.save(os.path.join(folder, f'preds_{idx}_{i}.npy'), predss[i])
-            np.save(os.path.join(folder, f'y_{idx}_{i}.npy'), yy[i])
+            np.save(os.path.join(folder, f'{i_name[i]}.npy'), predss[i].astype(np.float32))
+            np.save(os.path.join(folder, f'{m_name[i]}.npy'), yy[i].astype(np.float32))
     model.train()
 
 def save_npys_as_imgs(work_dir="/work_dir"):
@@ -113,9 +111,9 @@ def npy_to_vtu(work_dir="/work_dir"):
     ys = []
     preds = []
     for file in os.listdir(npfilepath):
-        if file.startswith("y"):
+        if file.startswith("mask"):
             ys.append(file)
-        if file.startswith("preds"):
+        if file.startswith("image"):
             preds.append(file)
     ys = sorted(ys)
     preds = sorted(preds)
@@ -123,15 +121,18 @@ def npy_to_vtu(work_dir="/work_dir"):
     for i in range(len(ys)):
         y = np.load(os.path.join(npfilepath, ys[i]))
         pred = np.load(os.path.join(npfilepath, preds[i]))
+        
+        mask_name = ys[i].split('.')[-2]
+        pred_name = preds[i].split('.')[-2]
         # y = y.flatten()
         # pred = pred.flatten()
    
-        filename = "/home/jyc3887/ML_micro/ML/experimental/base_mesh.vtu"
+        filename = "ML_micro/2_train/base_mesh.vtu"
         mask_data = meshio.read(filename)
-        mask_data.cell_data['ori_ind'] = [y.flatten()]
-        meshio.write(os.path.join(vtufilepath, f"mask_{i}.vtu"), mask_data)
+        mask_data.cell_data['ori_inds'] = [y.flatten()]
+        meshio.write(os.path.join(vtufilepath, f"{mask_name}.vtu"), mask_data)
         
         pred_data = meshio.read(filename)
-        pred_data.cell_data['ori_ind'] = [pred.flatten()]
-        meshio.write(os.path.join(vtufilepath, f"pred_{i}.vtu"), pred_data)
+        pred_data.cell_data['ori_inds'] = [pred.flatten()]
+        meshio.write(os.path.join(vtufilepath, f"{pred_name}.vtu"), pred_data)
 
