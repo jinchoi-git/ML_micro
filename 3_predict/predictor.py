@@ -103,6 +103,7 @@ Nx = 464
 Ny = 139 
 Nz = 46 
 cell_size = 1e-3/464.0
+div = 464000 # pixels to meters
 
 pf_args = pf_parse(os.path.join(MAIN_DIR, '3_track.yaml'))
 centroids = np.load(os.path.join(MAIN_DIR, '808032_centroids.npy')) #for local temperature field
@@ -135,6 +136,10 @@ np.save(os.path.join(MAIN_DIR, 'saved_npy', f'large_array_start'), large_array)
 print("start loop")
 for i in range(0, max_t-skip, skip):
       
+    if (mov_dir[i] != mov_dir[i+skip]).any():
+        print("turn occurs skip")
+        continue
+    
     x = round(xs[i]/cell_size)
     y = round(ys[i]/cell_size)
     z = round((zs[i])/cell_size)
@@ -146,15 +151,14 @@ for i in range(0, max_t-skip, skip):
     y = int(y - shift[1])
     print(f"after shift x={x}, y={y}, z={z}")
             
-    laser_mov = mov_dir[i]/np.linalg.norm(mov_dir[i])*1e-7
-    laser_mov = np.rint(laser_mov)
+    laser_mov = mov_dir[i]/np.linalg.norm(mov_dir[i])*1e-5 # laser moves 10um in 100 timesteps
 
-    T0 = get_T_laser(pf_args, centroids, 0.0862e-3, 0.0862e-3, 0.0689655e-3, ps[i], mov_dir[i]) 
-    T1 = get_T_laser(pf_args, centroids, 0.0862e-3+laser_mov[0], 0.0862e-3+laser_mov[1], 0.0689655e-3, ps[i+skip], mov_dir[i+skip]) 
+    T0 = get_T_laser(pf_args, centroids, 0.0862e-3+shift[0]/div, 0.0862e-3+shift[1]/div, 0.0689655e-3, ps[i], mov_dir[i]) 
+    T1 = get_T_laser(pf_args, centroids,  0.0862e-3+laser_mov[0]+shift[0]/div, 0.0862e-3+laser_mov[1]+shift[1]/div, 0.0689655e-3, ps[i+skip], mov_dir[i+skip]) 
     T0 = T0.reshape((80, 80, 32), order="F")
     T1 = T1.reshape((80, 80, 32), order="F")
     t_Tr0 = torch.Tensor(T0)
-    t_Tr1 = torch.Tensor(T1)    
+    t_Tr1 = torch.Tensor(T1)
     t_I0 = rve_picker(x, y, z, t_large_array)
    
     t_image[:, 0, :, :, :] = t_I0 /19.0 #normalization
@@ -165,7 +169,7 @@ for i in range(0, max_t-skip, skip):
     t_large_array = large_arr_updater(x, y, z, preds, t_large_array)
     large_array = t_large_array.to('cpu').detach().numpy()
     
-    if i % 10000 == 0:
-        np.save(os.path.join(MAIN_DIR, 'saved_npy', f'{case_name}_{i:08d}'), large_array.astype(np.int8))
+    if i % 100 == 0:
+        np.save(os.path.join(MAIN_DIR, 'saved_npy', f'{case_name}_{i:05d}'), large_array.astype(np.int8))
 
 print("done all")
